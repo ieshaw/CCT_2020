@@ -1,2 +1,2 @@
 # CCT_2020
-Navy CCT Screener 2020
+Ian Shaw's participation in the Navy CCT Screener 2020.
