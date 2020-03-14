@@ -18,9 +18,21 @@ Forcing our way into the other loop with the debugger (`b *do_echo+129, set $al=
 
 The "where provided" is on the stack.
 
-Maybe try and get it to link a stack addr, using the scanf method and `0x1f A's`.
-From there we can do longer buffer overwrites 
 Thought: maybe since it is a service, it may be forking and we may be able just to cyclethe canary. --> Nope. Comissioners said no brute forcing of competition architecture.
 
-Alright, so it looks like nothing is written to memory until the second loop is called (investigations in `hack.py` in the funciton `first loop twice`.
+Alright, so my progress thusfar is best outlined in the series of funcitons in `hack.py`
+1. `Stack_smashing`: Able to trigger a `stack smashing detected` message
+2. `stack_smashing2`: Able to precisely overwrite the canary
+3. `first_loop_twice`: explored different ways of triggering the read calls or the scanf call in `do_echo`
+4. `print_canary`: found how to print canary to the screen taking adavtage of the `write` call in the first conditional in `do_echo`
+5. `cycle_rip`: Now that I could overwrite the canary and overwrite the stack protections, I cycled bytes to find where to overwrite RIP in my buffer
+6. `take_control_rip`: After the information of the cycle, can precisely overwrite RIP and setup a call stack
 
+Now I need to look through the same buffer I receive with the canary (basically a printout of the stack) and see if there are any addresses in there I can use to find a libc address to setup a `ret2libc`. We see there is one on the stack, 4 QWORDs beyond the canary. This address is successfully printed to the screen in the function `print_libc_addr` and confirmed in a call to `cat /proc/<PID>/maps`   
+
+The address is consistently XX bytes from the base of libc.
+
+| PID | Printed Addr | LIBC Base Addr | Difference |
+|--|-|-|-|
+|29434| `0x7f3e1f8abb97`| `0x7f3e1f88a000`| 138135 |
+|29454| `0x7f357f585b97`| `0x7f357f564000`| 138135 |
