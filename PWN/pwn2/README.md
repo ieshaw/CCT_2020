@@ -30,7 +30,7 @@ Alright, so my progress thusfar is best outlined in the series of funcitons in `
 
 Now I need to look through the same buffer I receive with the canary (basically a printout of the stack) and see if there are any addresses in there I can use to find a libc address to setup a `ret2libc`. We see there is one on the stack, 4 QWORDs beyond the canary. This address is successfully printed to the screen in the function `print_libc_addr` and confirmed in a call to `cat /proc/<PID>/maps`   
 
-The address is consistently XX bytes from the base of libc.
+The address is consistently 138135 bytes from the base of libc.
 
 | PID | Printed Addr | LIBC Base Addr | Difference |
 |--|-|-|-|
