@@ -20,3 +20,4 @@ The "where provided" is on the stack.
 
 Maybe try and get it to link a stack addr, using the scanf method and `0x1f A's`.
 From there we can do longer buffer overwrites 
+Thought: maybe since it is a service, it may be forking and we may be able just to cyclethe canary.
