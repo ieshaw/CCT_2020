@@ -225,4 +225,4 @@ Got it, so we have a libc addr straight up given to us, what next? Ret2CSU. For 
 |11596| `0x7f3f0fb3eca0`| `0x7f3f0f753000`| 4111520 |
 
 
-
+Got up to line 100 in hack.py of setting up the ret2csu
