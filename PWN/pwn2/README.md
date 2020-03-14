@@ -1,5 +1,5 @@
 # PWN2
-Status: Unsolved
+Status: Unsolved, Stack Canary found and defeated, RIP control
 
 Start with a checksec
 ```
