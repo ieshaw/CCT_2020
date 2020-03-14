@@ -216,4 +216,13 @@ So let's see if this address is consistent in libc?
 |11495| `0x7fcff38ffca0`| `0x00007fcff3624070`| 2997296 |
 |11511| `'0x7f742f59fca0` | `0x00007f742f2c4070` | 2997296 |
 
-Got it, so we have a libc addr straight up given to us, what next? Ret2CSU. 
+Got it, so we have a libc addr straight up given to us, what next? Ret2CSU. For that, we are going to need the base address of libc.
+
+
+| PID | Printed Addr | LIBC Base Addr | Difference |
+|--|-|-|-|
+|11580| `0x7fd22f8a1ca0`| `0x7fd22f4b6000`| 4111520 |
+|11596| `0x7f3f0fb3eca0`| `0x7f3f0f753000`| 4111520 |
+
+
+
