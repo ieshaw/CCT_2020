@@ -1,5 +1,6 @@
 # PWN2
-Status: Unsolved, Stack Canary found and defeated, RIP control
+Status: Solved
+Flag: `ncct{d3t3ct_tr4ck_cl4ss1fy}`
 
 Start with a checksec
 ```
@@ -36,3 +37,5 @@ The address is consistently 138135 bytes from the base of libc.
 |--|-|-|-|
 |29434| `0x7f3e1f8abb97`| `0x7f3e1f88a000`| 138135 |
 |29454| `0x7f357f585b97`| `0x7f357f564000`| 138135 |
+
+After that, easy as using the smae offsets and ROP stack from `pwn1`.
