@@ -12,12 +12,15 @@ $ checksec pwn_me
     PIE:      PIE enabled
 ```
 
-Pulling it up in GDB abd breaking on the scanf, we are stuck in the second loop (`b *main+251`). Would there be any value in getting into the other loop?
+Pulling it up in GDB abd breaking on the scanf, we are stuck in the second loop (`b *do_echo+251`). Would there be any value in getting into the other loop?
 
-Forcing our way into the other loop with the debugger (`b *main+129, set $al=0xff`), ya, we have a write-what-where scenario. 
+Forcing our way into the other loop with the debugger (`b *do_echo+129, set $al=0xff`), ya, we have a write-what-where scenario. 
 
 The "where provided" is on the stack.
 
 Maybe try and get it to link a stack addr, using the scanf method and `0x1f A's`.
 From there we can do longer buffer overwrites 
-Thought: maybe since it is a service, it may be forking and we may be able just to cyclethe canary.
+Thought: maybe since it is a service, it may be forking and we may be able just to cyclethe canary. --> Nope. Comissioners said no brute forcing of competition architecture.
+
+Alright, so it looks like nothing is written to memory until the second loop is called (investigations in `hack.py` in the funciton `first loop twice`.
+
