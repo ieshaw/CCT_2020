@@ -1,5 +1,7 @@
 # PWN1
 
+Status: Unsolved
+
 With all binaries, want to start with checking the security structures
 ```
 $ checksec pwn_me
@@ -34,4 +36,135 @@ PROMPT>
 ```
 Yep, behavior is the same.
 
-Pumping the binary into Ghidra we see...
+Pumping the binary into Ghidra we see on line 62
+```
+printf("%p\n",*chunks[7]);
+```
+This is the pointer being putout, which is pointer partway into this stack buffer.
+
+Dropping this into gdb to manipulate the win funciton:
+```
+$ gdb pwn_me
+> disass main
+> b *main+494
+> r
+> set $rax=1
+> c
+Segmentation fault
+```
+So something is happening with the pointers it is referencing if we try and jump it. This tells me we may have to play by the game of the binary, rather than going for an overflow.
+
+In Ghidra in the check cookies function we see
+```
+    iVar1 = strcmp(input,"snickerdoodles");
+    if (iVar1 == 0) {
+      iVar1 = 0;
+    }
+    else {
+      iVar1 = strcmp(input,"oatmeal");
+      if (iVar1 == 0) {
+        iVar1 = 0;
+      }
+      else {
+        iVar1 = strcmp(input,"gingersnap");
+        if (iVar1 == 0) {
+          iVar1 = 0;
+        }
+        else {
+          iVar1 = strcmp(input,"shortbread");
+          if (iVar1 == 0) {
+            iVar1 = 0;
+          }
+          else {
+            iVar1 = strcmp(input,"butter");
+            if (iVar1 == 0) {
+              iVar1 = 0;
+            }
+            else {
+              iVar1 = strcmp(input,"molasses");
+              if (iVar1 == 0) {
+                iVar1 = 0;
+              }
+              else {
+                iVar1 = strcmp(input,"sugar");
+                if (iVar1 == 0) {
+                  iVar1 = 0;
+                }
+                else {
+                  iVar1 = strcmp(input,"sugar");
+                  if (iVar1 == 0) {
+                    iVar1 = 0;
+                  }
+                  else {
+                    iVar1 = strcmp(input,"sugar");
+                    if (iVar1 == 0) {
+                      iVar1 = 0;
+                    }
+                    else {
+                      iVar1 = strcmp(input,"almond");
+                      if (iVar1 == 0) {
+                        iVar1 = 1;
+                      }
+                      else {
+                        iVar1 = strcmp(input,"toffee");
+                        if (iVar1 == 0) {
+                          iVar1 = 0;
+                        }
+                        else {
+                          iVar1 = strcmp(input,"maple");
+                          if (iVar1 == 0) {
+                            iVar1 = 0;
+                          }
+                          else {
+                            iVar1 = strcmp(input,"fluffernutter");
+                            if (iVar1 == 0) {
+                              iVar1 = 0;
+                            }
+                            else {
+                              iVar1 = 0;
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return iVar1;
+}
+```
+
+So lets see where entering this into the funciton works for us
+```
+$ gdb pwn_me
+> b get_cookie
+> r
+snickerdoodles
+```
+So as long as I have a space afte snickerdoodles, I am fine. So it is sending me back into the function. Let's see whet this all looks like when I enter the inputs it is looking for
+
+```
+$ ./pwn_me
+0x7fb480ae5ca0
+Cookie Monster ONLY Wants...
+PROMPT>almond
+
+
+Segmentation fault (core dumped)
+```
+Alright, that is interesting, what is happening here?
+```
+$ gdb pwn_me 
+> b *main+494 //right after the return from get_cookie
+> r
+```
+
+So the `memcpy` call puts the input into another address ... boom, there it is. The puts call (`*main+549) prints everything after the space in almond, so we just need to overflow that until we get to the flag. 
+
+Wait no, we want shell, not a flag. Maybe it is a printf vulnerability?  
