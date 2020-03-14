@@ -1,6 +1,7 @@
 # PWN1
 
-Status: Unsolved
+Status: Solved
+Flag: `ncct{m3_w4nt_c00k13$_and_41m0nd_m1lk}`
 
 With all binaries, want to start with checking the security structures
 ```
@@ -224,7 +225,6 @@ Got it, so we have a libc addr straight up given to us, what next? Ret2CSU. For 
 |11580| `0x7fd22f8a1ca0`| `0x7fd22f4b6000`| 4111520 |
 |11596| `0x7f3f0fb3eca0`| `0x7f3f0f753000`| 4111520 |
 
+Actually, not doing Ret2CSU, rather a simple `system("/bin/sh")` call. 
 
-Got up to line 100 in hack.py of setting up the ret2csu
-
-#IDEA: Maybe just try a simpler system("/bin/sh") call
+Having some issues.... oh, just stack alignment. Throw in an empty ret.
