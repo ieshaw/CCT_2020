@@ -198,3 +198,22 @@ print(p.recv())
 ```
 
 So we have RIP control, we are going to need to leak an address to figure out libc.
+
+Alright, so were is this address pointing?
+```
+$ python hack.py
+0x7f42b752bca0
+$ gdb -p=123475
+> vmmap 
+ 0x7f42b752b000     0x7f42b752d000 rw-p     2000 1eb000 /lib/x86_64-linux-gnu/libc-2.27.so
+```
+
+Ok, so is this somehwere in the plt or the GOT? Nope, I went through and followed the GOT and the PLT from puts, this is nowhere near there. Where is this? Well thats exactly the thing, it is a libc address. 
+
+So let's see if this address is consistent in libc? 
+| PID | Printed Addr | Puts Addr | Difference |
+|--|-|-|-|
+|11495| `0x7fcff38ffca0`| `0x00007fcff3624070`| 2997296 |
+|11511| `'0x7f742f59fca0` | `0x00007f742f2c4070` | 2997296 |
+
+Got it, so we have a libc addr straight up given to us, what next? Ret2CSU. 
