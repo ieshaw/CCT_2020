@@ -1,5 +1,5 @@
 # PWN3
-Status: Unsolved, control last 4 bytes of RIP
+Status: Unsolved, control of RIP
 
 Start with a checksec
 ```
@@ -76,18 +76,19 @@ Ok, wild. So Can I overflow if I do push, name, pop, push? This happens in the f
 |--|--|--|
 | Push | `0x559f3c4d0260` | `0x559f3c4d04b0: 0x58585858      0x00000000` |
 | Name | `0x559f3c4d04b0` | `0x559f3c4d04b0: 0x3baac8a0      0x0000559f` |
-| Push (after pop 1)| `0x559f3c4d0260`  | `0x559f3c4d04b0: 0x5a5a5a5a      0x0000559f` |
+| Push (after pop 1)| `0x559f3c4d0260`  | `0x559f3c4d04b0: 0x5a5a5a5a      0x5a5a5a5a` |
 
 ```
 pwndbg> x/s 0x559f3c4d0260 + 0x250
-0x559f3c4d04b0: "ZZZZ\237U"
+0x559f3c4d04b0: "ZZZZZZZZuser"
 ```
+0x5592d7dc14b0 
 
 Now if you call `print`, it will execute that address. We have control over at RIP.
 
-#TODO: Is the heap executable? If not, can we use it as the rop chain?
+### Massaging RIP
 
-## Random Thoughts
-- Can manipulate the pointer in the linked list to free the name, then can write into that space on the heap with the next push?
-- Do you need to trigger a connection to the server twice? It may be using the same heap space for each connection.
+Alright, we know we can mess with the last 4 bytes of RIP. What do we do with it?
+
+On this next run, we see the pointer to the function at the top of the name is `0x5592d74d58a0`, which from a look in vmmap is in the text segment, as we would expect. Now what is nice about that, is that with partial overwrite, we can start jumping around the text segment to interesting places. Where would we want to go?       
 
