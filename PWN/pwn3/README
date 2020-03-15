@@ -46,3 +46,27 @@ Note, the conditions for popping are interesting (particularly the `isNumber` fu
 The subfunction here is `stack_print`.
 Starts by executing the function in the name global, with the arguments from that buffer as well (very interesting). 
 It then goes on to print the elements of the linked list. 
+
+## Back to Thinking
+
+Ok so even if I was able to do some use-after-free trickery by putting a function pointer in the name, I would need to leak some sort of adress as PIE is enabled.
+
+## The `Stack_Print` Funcion
+
+Ok so there is something funny going on here with a print and a write. So it prints the stack data, but also just writes a certain number of bytes. 
+
+## Experiments
+
+### Overflowing into the namespace on the Heap
+
+Alright so it looks like you can start the program and not have to name yourself firsti, or you can just name yourself multiple times. Maybe you can take control of that function in the name space by either overflowing into it? 
+
+Ok so I gave myself a name, then gave myself another name, but it still only prints the first name when I enter `name` into the prompt. What is happening here? Hopping into debugger shows that even though it prings "You have been Named!" it is actually just jopping around the conditional and not manipulating the memory.
+
+Ok so next I want to see where on the heap we are working.
+#TODO: Examine the heap when name first then push
+#TODO: Examine the heap when push first then name
+
+## Random Thoughts
+- Do you need to trigger a connection to the server twice? It may be using the same heap space for each connection.
+
