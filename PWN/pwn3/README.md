@@ -102,5 +102,5 @@ Well assuming we get it correct, we would have a 32bytes on the stack to run a r
 
 #### Cause a Leak?
 
-#TODO: Hunt this down
+Ok, so `printf` is in the `.plt`, can I get there? Yep, looks like that is connected to the text segment. (This is as `0x10901`). Well in that case, system is in the plt already too. In fact in the function `stack_run`(at `0x19c0`, system is given a pointer to... the name??   
 
