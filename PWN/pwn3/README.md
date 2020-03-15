@@ -92,3 +92,15 @@ Alright, we know we can mess with the last 4 bytes of RIP. What do we do with it
 
 On this next run, we see the pointer to the function at the top of the name is `0x5592d74d58a0`, which from a look in vmmap is in the text segment, as we would expect. Now what is nice about that, is that with partial overwrite, we can start jumping around the text segment to interesting places. Where would we want to go?       
 
+#### Smash the Stack?
+The `read` call in `handle_stack_commands` looks pretty juicy, lets see if we can use that to slam the stack. 
+Looking at an objdump of the binary, the `print_client` function (the function pointer at the start of the name buffer we keep overwriting) is at offset `0x18a0`, and looking in `handle_stack_commands` is at offset `0x1a67`, in particular, we would lip to jump right to `0x1adc` which is where the `read` call is setup.
+The trouble is, the upper bits of that second byte change with PIE, so we either need a leak (which we will probably nead anyway) or we can just connect a bunch of times and hope we get odds correct eventually 
+Well assuming we get it correct, we would have a 32bytes on the stack to run a rop chain, as exhibited in the function `percision_stack_smah()` in `hack.py`.
+
+(Sidenote, turns out system is already in the plt, wonder if we can get there) 
+
+#### Cause a Leak?
+
+#TODO: Hunt this down
+
