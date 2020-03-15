@@ -1,0 +1,48 @@
+# PWN3
+Status: Unsolved
+
+Start with a checksec
+```
+$ checksec pwn_me
+[*] '/home/ubuntu/CCT_2020/PWN/pwn3/pwn_me'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      PIE enabled
+```
+
+Alright, tested it in the local and remote service, perform the same, lots of user input. Let's throw it in Ghidra and see if we can figure out what we are working with.
+
+## Initial RE
+
+The first function we really care about it `handle_stack_commands` which is reading the commands, drops a null byte at the end of the command buffer, then zeros out the buffer in preparation for the next fun. A buffer overflow won't be that straightforward since the read only takes in 2k bytes. 
+
+Let's investigate the `stack_command` function, which takes the `client_message` (our input) as an argument.
+Lots of use of `strchr`, which returns a pointer to the substring in a string, NULL if not found.  Its looking for, in order. : `\n,\r.\0,`, and replacing those with null bytes. Then it looks for the commands `name, push, pop, print` in that order, all with their own subfunction.   
+
+### Name
+
+The subfunction here is `set_name`. 
+It creates some spacei (`malloc(0x248)`) on the heap, puts that address in a global, then the space in memory gets copied:
+````
+Name Buffer:
+0x0: addr of function print_client
+0x8: b'user'
+0x48: name string (up to 0x200 bytes, as measured by strlen)[ note strlen doesnt count the terminating null byte]
+```
+
+### Push
+
+The subfunction here is `stack_push`. This basically creates a linked list of the stack commands. Its in a globel address right before the name global.
+
+### Pop
+
+The subfunction here is `stack_pop`, which uses the input number to remove the said number of nodes from the linked list gerenerated by the `stack_push` command. 
+Note, the conditions for popping are interesting (particularly the `isNumber` function. Not sure if that is of use, but something to keep in mind.
+
+### Print
+
+The subfunction here is `stack_print`.
+Starts by executing the function in the name global, with the arguments from that buffer as well (very interesting). 
+It then goes on to print the elements of the linked list. 
