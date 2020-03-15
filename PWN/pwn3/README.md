@@ -25,7 +25,8 @@ Lots of use of `strchr`, which returns a pointer to the substring in a string, N
 
 The subfunction here is `set_name`. 
 It creates some spacei (`malloc(0x248)`) on the heap, puts that address in a global, then the space in memory gets copied:
-````
+
+```
 Name Buffer:
 0x0: addr of function print_client
 0x8: b'user'
