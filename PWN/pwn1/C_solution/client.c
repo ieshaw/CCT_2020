@@ -63,8 +63,9 @@ int main(int argc, char const *argv[])
     if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) ==  0){
         //Read prologue of connection
         package = calloc(1000, 1);
-        package = read_message(5, sock, package);
-        printf("Prologue: \n %s", package);
+        char* addr_str = strtok(read_message(5, sock, package), "\n");
+        long int libc_addr = strtol(addr_str, NULL, 0);
+        printf("Addr: 0x%lx \n", libc_addr);
         free(package);
         /*
         myGetLine(&buffer, &n, stdin);
