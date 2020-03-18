@@ -4,7 +4,8 @@ from pwn import *
 #env = {"LD_PRELOAD": os.path.join(os.getcwd(), "./libc-2.27.so")}
 #p = process("./pwn_me", env=env)
 #p = process("./pwn_me")
-p = remote("64.227.23.177",1337)
+#p = remote("64.227.23.177",1337)
+p = remote("127.0.0.1",1337)
 
 def A_smash():
     print(p.recv())
