@@ -1,53 +1,13 @@
 #include "deps.h"
 
 
-int old_main(int argc, char const *argv[]) 
-{ 
-    int sock = 0; 
-    struct sockaddr_in addr; 
-    char * buffer;
-    char * package;
-    int n;
-    char * port;
-    char * ipaddr;
-    setAddrInfo(argc, argv, port, ipaddr, &addr);
-
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-    { 
-        printf("\n Socket creation error \n"); 
-        return -1; 
-    }
-       
-    int continue_flag = 1;
-    if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) ==  0){
-        printf("Welcome to the Server!\n");
-        while(continue_flag){
-            printf("Type message to echo then hit enter, of 0 if you want to close the connection: ");
-            myGetLine(&buffer, &n, stdin);
-            printf("Sending message of %d bytes \n", n);
-            send(sock , buffer, n , 0 ); 
-            printf("Sent to server: %s ", buffer);
-            printf("......\n");
-            package = calloc(100, 1);
-            package = read_message(5, sock, package);
-            printf("Reply from Server: %s \n",package); 
-            free(package);
-            if((char) *buffer == '0'){
-                continue_flag = 0;
-            }
-            free(buffer);
-        }
-    }
-    return 0; 
-} 
-
 int main(int argc, char const *argv[]) 
 { 
     int sock = 0; 
     struct sockaddr_in addr; 
     char * buffer;
     char * package;
-    int n;
+    size_t n = 0;
     char * port;
     char * ipaddr;
     setAddrInfo(argc, argv, port, ipaddr, &addr);
@@ -91,25 +51,18 @@ int main(int argc, char const *argv[])
         send(sock , payload, payload_len , 0 ); 
         free(payload);
         while(1){
-            myGetLine(&buffer, &n, stdin);
+            n = 0;
+            buffer = NULL;
+            fflush(stdin);
+            getline(&buffer, &n, stdin);
+            printf("Sending: %s \n", buffer);
             send(sock, buffer, n , 0 ); 
+            free(buffer);
             package = calloc(1000, 1);
             package = read_message(5, sock, package);
-            printf("%s ",package); 
-            free(buffer);
+            printf("From Server: %s ",package); 
             free(package);
         }
-        /*
-        myGetLine(&buffer, &n, stdin);
-        printf("Sending message of %d bytes \n", n);
-        send(sock , buffer, n , 0 ); 
-        printf("Sent to server: %s ", buffer);
-        printf("......\n");
-        package = calloc(100, 1);
-        package = read_message(5, sock, package);
-        printf("Reply from Server: %s \n",package); 
-        free(buffer);
-        */
     }
     return 0; 
 } 
